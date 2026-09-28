@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Bank Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <div class="header-logo">🩸 BloodBank</div>
+        <div class="header-subtitle">Inventory &amp; Donor Eligibility Tracker</div>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- NAV TABS -->
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="openTab(event,'donorTab')">👤 Donors</button>
+        <button class="tab-btn" onclick="openTab(event,'donationTab')">💉 Donations</button>
+        <button class="tab-btn" onclick="openTab(event,'issueTab')">📦 Issue Blood</button>
+        <button class="tab-btn" onclick="openTab(event,'inventoryTab')">📊 Inventory</button>
+    </nav>
+
+    <!-- ─── DONOR TAB ──────────────────────────────────────────────────────── -->
+    <div id="donorTab" class="tab-content active-tab">
+
+        <div class="grid-2">
+            <!-- Register Donor -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">➕</span>
+                    <h3>Register Donor</h3>
+                </div>
+                <label>Full Name</label>
+                <input type="text" id="donorName" placeholder="e.g. John Smith">
+                <label>Blood Group</label>
+                <select id="donorGroup">
+                    <option value="">-- Select Blood Group --</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                    <option>O+</option><option>O-</option>
+                </select>
+                <button class="btn btn-primary" onclick="registerDonor()">Register Donor</button>
+            </div>
+
+            <!-- Check Eligibility -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">✅</span>
+                    <h3>Check Eligibility</h3>
+                </div>
+                <label>Donor ID</label>
+                <input type="number" id="eligibilityDonorId" placeholder="Enter Donor ID" min="1">
+                <button class="btn btn-secondary" onclick="checkEligibility()">Check Eligibility</button>
+                <div id="eligibilityResult" class="result-box hidden"></div>
+            </div>
+        </div>
+
+        <!-- All Donors List -->
+        <div class="card full-width">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h3>All Donors</h3>
+                <button class="btn btn-sm btn-secondary" onclick="loadDonors()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table id="donorTable">
+                    <thead>
+                        <tr><th>ID</th><th>Name</th><th>Blood Group</th><th>Last Donation</th></tr>
+                    </thead>
+                    <tbody id="donorTableBody">
+                        <tr><td colspan="4" class="empty-row">Click Refresh to load donors</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── DONATION TAB ───────────────────────────────────────────────────── -->
+    <div id="donationTab" class="tab-content">
+
+        <div class="grid-2">
+            <!-- Add Donation -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">💉</span>
+                    <h3>Log Donation</h3>
+                </div>
+                <label>Donor ID</label>
+                <input type="number" id="donateDonorId" placeholder="Enter Donor ID" min="1" oninput="fetchDonorBloodGroup()">
+                <label>Blood Group</label>
+                <div id="donorBloodGroupDisplay" class="blood-group-display muted">— enter donor ID above —</div>
+                <div class="info-note">
+                    ⓘ Blood unit expiry is set to 42 days from collection date.<br>
+                    Donors must wait 90 days between donations.
+                </div>
+                <button class="btn btn-primary" onclick="addDonation()">Log Donation</button>
+            </div>
+
+            <!-- View Donations by Donor -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🔍</span>
+                    <h3>Donations by Donor</h3>
+                </div>
+                <label>Donor ID</label>
+                <input type="number" id="donorDonationsId" placeholder="Enter Donor ID" min="1">
+                <button class="btn btn-secondary" onclick="loadDonationsByDonor()">View Donations</button>
+            </div>
+        </div>
+
+        <!-- All Donations -->
+        <div class="card full-width">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h3>Donation History</h3>
+                <button class="btn btn-sm btn-secondary" onclick="loadAllDonations()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table id="donationTable">
+                    <thead>
+                        <tr><th>ID</th><th>Donor</th><th>Blood Group</th><th>Date</th><th>Unit ID</th></tr>
+                    </thead>
+                    <tbody id="donationTableBody">
+                        <tr><td colspan="5" class="empty-row">Click Refresh to load donations</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── ISSUE TAB ──────────────────────────────────────────────────────── -->
+    <div id="issueTab" class="tab-content">
+
+        <div class="grid-2">
+            <!-- Issue Blood Unit -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📤</span>
+                    <h3>Issue Blood Unit</h3>
+                </div>
+                <label>Blood Group</label>
+                <select id="issueGroup">
+                    <option value="">-- Select Blood Group --</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>AB+</option><option>AB-</option>
+                    <option>O+</option><option>O-</option>
+                </select>
+                <label>Requested By</label>
+                <input type="text" id="requestedBy" placeholder="e.g. Dr. Kumar / Ward 3">
+                <div class="info-note">
+                    ⓘ Units expiring within 7 days are excluded from issuance.
+                </div>
+                <button class="btn btn-danger" onclick="issueUnit()">Issue Unit</button>
+            </div>
+
+            <!-- Issue Record Result -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🧾</span>
+                    <h3>Last Issue Result</h3>
+                </div>
+                <div id="issueResult" class="result-box">
+                    <p class="muted">Issue a blood unit to see the record here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Issue Records -->
+        <div class="card full-width">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h3>Issue Records</h3>
+                <button class="btn btn-sm btn-secondary" onclick="loadIssueRecords()">🔄 Refresh</button>
+            </div>
+            <div class="table-wrap">
+                <table id="issueTable">
+                    <thead>
+                        <tr><th>Record ID</th><th>Unit ID</th><th>Blood Group</th><th>Issue Date</th><th>Requested By</th></tr>
+                    </thead>
+                    <tbody id="issueTableBody">
+                        <tr><td colspan="5" class="empty-row">Click Refresh to load issue records</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── INVENTORY TAB ──────────────────────────────────────────────────── -->
+    <div id="inventoryTab" class="tab-content">
+
+        <!-- Stock Summary Cards -->
+        <div class="card full-width">
+            <div class="card-header">
+                <span class="card-icon">🏥</span>
+                <h3>Stock by Blood Group</h3>
+                <button class="btn btn-sm btn-secondary" onclick="loadStockSummary()">🔄 Refresh</button>
+            </div>
+            <div id="stockGrid" class="blood-group-grid">
+                <p class="muted">Click Refresh to load stock summary.</p>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Expiring Soon -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚠️</span>
+                    <h3>Expiring Within 7 Days</h3>
+                    <button class="btn btn-sm btn-warning" onclick="loadExpiringSoon()">🔄 Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="expiringTable">
+                        <thead>
+                            <tr><th>Unit ID</th><th>Group</th><th>Collected</th><th>Expires</th></tr>
+                        </thead>
+                        <tbody id="expiringTableBody">
+                            <tr><td colspan="4" class="empty-row">Click Refresh</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Blood Units -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🧪</span>
+                    <h3>All Blood Units</h3>
+                    <button class="btn btn-sm btn-secondary" onclick="loadAllBloodUnits()">🔄 Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table id="bloodUnitTable">
+                        <thead>
+                            <tr><th>ID</th><th>Group</th><th>Expires</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="bloodUnitTableBody">
+                            <tr><td colspan="4" class="empty-row">Click Refresh</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<script src="app.js"></script>
+</body>
+</html>
