@@ -1,7 +1,5 @@
-# BloodBank
-A simple Spring Boot &amp; MySQL web application to track blood bank unit inventory, enforce donor eligibility rules, and manage unit expiration dates.
 # Blood Bank Inventory & Donor Eligibility Tracker
-
+A simple Spring Boot &amp; MySQL web application to track blood bank unit inventory, enforce donor eligibility rules, and manage unit expiration dates.
 A lightweight Spring Boot application built with MySQL and vanilla JavaScript to streamline blood inventory management and enforce eligibility business rules[cite: 1, 2].
 
 ## 📌 Features
